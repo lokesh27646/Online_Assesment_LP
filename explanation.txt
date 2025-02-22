@@ -1,0 +1,168 @@
+SampleProject Web API Documentation
+================================
+
+Project Overview
+---------------
+This is a .NET Framework 4.7.2 Web API project that implements a microservice-style architecture with multiple project layers. The project uses in-memory repositories for data storage and follows RESTful API design principles.
+
+Project Structure
+---------------
+1. BusinessEntities
+   - Contains domain models (User, Product, Order)
+   - Implements immutable domain objects with proper encapsulation
+   - Uses GUID-based identifiers
+
+2. Data
+   - Implements generic repository pattern
+   - Provides both RavenDB and in-memory storage options
+   - Thread-safe implementations using ConcurrentDictionary
+
+3. WebApi
+   - RESTful API controllers
+   - Request/response models
+   - Input validation
+   - Consistent error handling
+
+API Endpoints
+------------
+1. Products API
+   - POST /api/products
+     * Creates a new product
+     * Required fields: name, price, stockQuantity
+     * Optional fields: description, categories
+
+   - PUT /api/products/{id}
+     * Updates an existing product
+     * All fields can be updated
+
+   - DELETE /api/products/{id}
+     * Deletes a product
+     * Returns 404 if product not found
+
+   - GET /api/products/{id}
+     * Retrieves a single product
+     * Returns 404 if product not found
+
+   - GET /api/products
+     * Lists products with optional filtering
+     * Query parameters:
+       - nameFilter: Filter by product name
+       - minPrice: Minimum price filter
+       - maxPrice: Maximum price filter
+
+2. Orders API
+   - POST /api/orders
+     * Creates a new order
+     * Required fields: userId, items (array of productId and quantity)
+     * Validates:
+       - User exists
+       - Products exist
+       - Sufficient stock available
+     * Automatically:
+       - Calculates total amount
+       - Updates product stock
+       - Sets initial status to "Pending"
+
+   - PUT /api/orders/{id}/status
+     * Updates order status
+     * Required field: status
+
+   - DELETE /api/orders/{id}
+     * Deletes a pending order
+     * Restores product stock quantities
+     * Returns 400 if order is not in Pending status
+
+   - GET /api/orders/{id}
+     * Retrieves a single order
+     * Returns 404 if order not found
+
+   - GET /api/orders
+     * Lists orders with optional filtering
+     * Query parameters:
+       - userId: Filter by user
+       - status: Filter by status
+       - fromDate: Filter by minimum order date
+       - toDate: Filter by maximum order date
+
+Data Models
+----------
+1. Product
+   - Id: Guid
+   - Name: string (required)
+   - Description: string
+   - Price: decimal
+   - StockQuantity: int
+   - Categories: List<string>
+
+2. Order
+   - Id: Guid
+   - UserId: Guid
+   - Items: List<OrderItem>
+   - Status: string
+   - OrderDate: DateTime
+   - TotalAmount: decimal
+
+3. OrderItem
+   - ProductId: Guid
+   - Quantity: int
+   - UnitPrice: decimal
+
+Repository Pattern
+----------------
+The project implements a generic repository pattern with two storage options:
+
+1. InMemoryRepository<T>
+   - Uses ConcurrentDictionary for thread-safe operations
+   - Suitable for testing and development
+   - No persistence between application restarts
+
+2. Repository<T> (RavenDB)
+   - Uses RavenDB for persistent storage
+   - Supports complex queries
+   - Production-ready implementation
+
+Testing
+-------
+A Postman collection is provided in the postmanCollection folder with example requests for all API endpoints. The collection includes:
+- Sample request bodies
+- Environment variables
+- Example responses
+
+Best Practices Implemented
+------------------------
+1. Input Validation
+   - Model validation using DataAnnotations
+   - Business rule validation in domain models
+   - Proper error messages and status codes
+
+2. Error Handling
+   - Consistent error response format
+   - Proper HTTP status codes
+   - Detailed error messages for debugging
+
+3. Code Organization
+   - Separation of concerns
+   - Domain-driven design principles
+   - Clean architecture patterns
+
+4. API Design
+   - RESTful conventions
+   - Consistent URL patterns
+   - Proper HTTP verb usage
+   - Query parameter filtering
+
+5. Performance
+   - Async/await pattern
+   - Efficient in-memory operations
+   - Proper disposal of resources
+
+Future Enhancements
+-----------------
+1. Authentication and Authorization
+2. Caching implementation
+3. Logging and monitoring
+4. Rate limiting
+5. API versioning
+6. Swagger/OpenAPI documentation
+7. Integration tests
+8. Performance benchmarks
